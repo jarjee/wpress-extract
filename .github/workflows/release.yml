@@ -27,11 +27,9 @@ jobs:
         GOARCH: ${{ matrix.goarch }}
         CGO_ENABLED: 0
       run: |
-        OUTPUT="wpress-extract-${GOOS}-${GOARCH}"
-        if [ "$GOOS" = "windows" ]; then OUTPUT+=".exe"; fi
-        go build -trimpath -ldflags="-s -w" -o $OUTPUT .
+        make build
         mkdir -p dist
-        mv $OUTPUT dist/
+        mv bin/wpress-extract-* dist/
 
     - uses: actions/upload-artifact@v4
       with:
