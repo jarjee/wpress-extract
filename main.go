@@ -126,18 +126,44 @@ func compress(inputPath, outputPath string) error {
 	}
 	defer file.Close()
 
+	// Get absolute path of output file to exclude from processing
+	outputAbs, err := filepath.Abs(outputPath)
+	if err != nil {
+		return fmt.Errorf("absolute output path: %w", err)
+	}
+
 	return filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
+		if err != nil {
 			return err
 		}
 
-		relPath, _ := filepath.Rel(inputPath, path)
+		// Skip directories and the output file itself
+		currentAbs, err := filepath.Abs(path)
+		if err != nil {
+			return fmt.Errorf("absolute path: %w", err)
+		}
+		if currentAbs == outputAbs {
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(inputPath, path)
+		if err != nil {
+			return fmt.Errorf("relative path: %w", err)
+		}
+
 		prefix := filepath.Dir(relPath)
 		if prefix == "." {
 			prefix = ""
 		}
 
-		f, _ := os.Open(path)
+		f, err := os.Open(path)
+		if err != nil {
+			return fmt.Errorf("open file: %w", err)
+		}
 		defer f.Close()
 
 		header := &FileHeader{
