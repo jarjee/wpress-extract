@@ -1,4 +1,4 @@
-module github.com/ofhouse/wpress-extract
+module github.com/jarjee/wpress-extract
 
 go 1.21
 
