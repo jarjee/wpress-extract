@@ -37,10 +37,15 @@ The command creates a new directory with the same name (e.g. `your-migration/`) 
 
 ### Options
 
-| Option            | Description                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| `-o, --out <dir>` | Define an alternate directory where the archive should be extracted to.               |
-| `-f, --force`     | Skip the check if the output directory already exists and override the content in it. |
+| Option               | Description                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| `-input <file>`      | Path to the input .wpress file (required, can also be provided as positional argument)|
+| `-out <dir>`         | Define an alternate directory where the archive should be extracted to.               |
+| `-force`             | Skip the check if the output directory exists and override the content in it.         |
+| `-mode <mode>`       | Operation mode: `extract` (default) or `compress`                                     |
+| `-help`              | Show help message                                                                     |
+
+* Note: Windows users can drag-and-drop files onto the executable instead of using `-input`
 
 ## Acknowledgements
 
