@@ -13,28 +13,29 @@
 
 ## Usage
 
-Download the appropriate binary for your system from the [releases page](https://github.com/ofhouse/wpress-extract/releases).
+### Build from Source
+```sh
+git clone https://github.com/jarjee/wpress-extract
+cd wpress-extract
+make build
+sudo install bin/wpress-extract /usr/local/bin
+```
 
+### Extract Archives
 ```sh
 # Extract a wpress file
-./wpress-extract -input your-migration.wpress
+./bin/wpress-extract -input your-migration.wpress
 
-# Or specify custom output directory
-./wpress-extract -input your-migration.wpress -out ./output-dir
+# Specify custom output directory
+./bin/wpress-extract -input your-migration.wpress -out ./output-dir
 
 # Force overwrite existing directory
-./wpress-extract -input your-migration.wpress -force
+./bin/wpress-extract -input your-migration.wpress -force
 ```
 
-The command then creates a new directory with the same name (in this example `your-migration/`) where it extracts the content of the archive into.
+The command creates a new directory with the same name (e.g. `your-migration/`) where it extracts the archive contents.
 
 ### Options
-
-You can customize the standard behavior of the `wpress-extract` command with these custom options that can be added:
-
-```sh
-wpress-extract --out ./alternate-output your-migration.wpress
-```
 
 | Option            | Description                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------- |
@@ -44,14 +45,14 @@ wpress-extract --out ./alternate-output your-migration.wpress
 ## Acknowledgements
 
 The functionality of this package is inspired by the [Wpress-Extractor](https://github.com/fifthsegment/Wpress-Extractor) tool.
-Since the provided binaries stopped working on MacOS and no solution for Linux is available I created this tool as a cross-platform alternative.
+This fork contains modifications assisted by [aider](https://aider.chat), an LLM-powered coding assistant.
 
-## Author
+## Maintainers
 
 <!-- prettier-ignore-start -->
 
-| [<img src="https://avatars0.githubusercontent.com/u/472867?v=4" width="100px;"/><br /><sub><b>Felix Haus</b></sub>](https://github.com/ofhouse)<br /><sub>[Website](https://felix.house/) • [Twitter](https://twitter.com/ofhouse)</sub>|
-| :---: |
+| [<img src="https://avatars0.githubusercontent.com/u/472867?v=4" width="100px;"/><br /><sub><b>Felix Haus</b></sub>](https://github.com/ofhouse)<br /><sub>[Website](https://felix.house/) • [Twitter](https://twitter.com/ofhouse)</sub> | [<img src="https://avatars.githubusercontent.com/u/jarjee" width="100px;"/><br /><sub><b>@jarjee</b></sub>](https://github.com/jarjee)<br /><sub>Maintainer</sub> |
+| :---: | :---: |
 
 <!-- prettier-ignore-end -->
 
