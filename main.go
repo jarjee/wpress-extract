@@ -14,8 +14,9 @@ import (
 const (
 	headerSize      = 4377
 	chunkSize       = 512
-	headerChunkEOF  = "\x00"
 )
+
+var emptyHeader = make([]byte, headerSize)
 
 type FileHeader struct {
 	Name   string
@@ -93,20 +94,21 @@ func extract(inputPath, outputPath string, force bool) error {
 
 func readHeader(r io.Reader) (*FileHeader, error) {
        buf := make([]byte, headerSize)
-       n, err := r.Read(buf)
-       if err != nil || n < headerSize {
+       n, err := io.ReadFull(r, buf)
+       if err == io.EOF || n < headerSize {
                return nil, io.EOF
        }
 
-       if bytes.Equal(buf[:1], []byte(headerChunkEOF)) {
+       // Check for full empty header (all 0x00 bytes)
+       if bytes.Equal(buf, emptyHeader) {
                return nil, io.EOF
        }
 
        return &FileHeader{
-               Name:   string(bytes.Trim(buf[0:255], "\x00")),
+               Name:   string(bytes.TrimRight(buf[0:255], "\x00")),
                Size:   readInt64(buf[255:269]),
                MTime:  time.Unix(readInt64(buf[269:281]), 0),
-               Prefix: string(bytes.Trim(buf[281:headerSize], "\x00")),
+               Prefix: string(bytes.TrimRight(buf[281:headerSize], "\x00")),
        }, nil
 }
 
