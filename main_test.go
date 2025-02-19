@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,8 +24,8 @@ func TestReadHeader(t *testing.T) {
 	t.Run("ValidHeader", func(t *testing.T) {
 		buf := make([]byte, headerSize)
 		copy(buf[0:255], []byte("test.txt\x00"))
-		binary.LittleEndian.PutUint64(buf[255:263], 1024)
-		binary.LittleEndian.PutUint64(buf[269:277], 1672531200) // 2023-01-01
+		copy(buf[255:269], []byte("1024\x00\x00\x00\x00\x00\x00\x00\x00\x00"))  // Size field as string
+		copy(buf[269:281], []byte("1672531200\x00"))                          // MTime as string
 		copy(buf[281:], []byte("wp-content/uploads\x00"))
 
 		r := bytes.NewReader(buf)
