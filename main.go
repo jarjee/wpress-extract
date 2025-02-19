@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"strconv"
 	"os"
 	"path/filepath"
 	"time"
@@ -104,17 +105,28 @@ func readHeader(r io.Reader) (*FileHeader, error) {
                return nil, io.EOF
        }
 
+       // Parse Size
+       sizeStr := string(bytes.TrimRight(buf[255:269], "\x00"))
+       size, err := strconv.ParseInt(sizeStr, 10, 64)
+       if err != nil {
+               return nil, fmt.Errorf("invalid size: %w", err)
+       }
+
+       // Parse MTime
+       mtimeStr := string(bytes.TrimRight(buf[269:281], "\x00"))
+       mtime, err := strconv.ParseInt(mtimeStr, 10, 64)
+       if err != nil {
+               return nil, fmt.Errorf("invalid mtime: %w", err)
+       }
+
        return &FileHeader{
                Name:   string(bytes.TrimRight(buf[0:255], "\x00")),
-               Size:   readInt64(buf[255:269]),
-               MTime:  time.Unix(readInt64(buf[269:281]), 0),
+               Size:   size,
+               MTime:  time.Unix(mtime, 0),
                Prefix: string(bytes.TrimRight(buf[281:headerSize], "\x00")),
        }, nil
 }
 
-func readInt64(b []byte) int64 {
-       return int64(binary.LittleEndian.Uint64(b[:8]))
-}
 
 func writeFile(r io.Reader, dest string, size int64) error {
        f, err := os.Create(dest)
@@ -133,15 +145,22 @@ func writeFile(r io.Reader, dest string, size int64) error {
                }
 
                n, err := r.Read(buf[:readSize])
+               if n > 0 {
+                       if _, err := f.Write(buf[:n]); err != nil {
+                               return err
+                       }
+                       remaining -= int64(n)
+               }
                if err != nil {
+                       if err == io.EOF {
+                               break
+                       }
                        return err
                }
+       }
 
-               if _, err := f.Write(buf[:n]); err != nil {
-                       return err
-               }
-
-               remaining -= int64(n)
+       if remaining != 0 {
+               return fmt.Errorf("incomplete file data - expected %d more bytes", remaining)
        }
 
        return nil
