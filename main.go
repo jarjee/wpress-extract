@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"os"
 	"path/filepath"
 	"time"
@@ -50,13 +51,18 @@ func main() {
 			os.Exit(1)
 		}
 	case "compress":
+		outputFile := ""
 		if *outputDir == "" {
-			*outputDir = filepath.Base(*inputFile) + ".wpress"
+			outputFile = filepath.Base(*inputFile) + ".wpress"
 		} else {
-			// Clean output path in case it contains directory separators
-			*outputDir = filepath.Clean(*outputDir)
+			cleaned := filepath.Clean(*outputDir)
+			if strings.HasSuffix(cleaned, string(filepath.Separator)) || isExistingDir(cleaned) {
+				outputFile = filepath.Join(cleaned, filepath.Base(*inputFile)+".wpress")
+			} else {
+				outputFile = cleaned
+			}
 		}
-		if err := compress(*inputFile, *outputDir); err != nil {
+		if err := compress(*inputFile, outputFile); err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
@@ -120,6 +126,11 @@ func writeHeader(w io.Writer, h *FileHeader) error {
 	
 	_, err := w.Write(buf)
 	return err
+}
+
+func isExistingDir(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
 func compress(inputPath, outputPath string) error {
