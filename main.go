@@ -29,6 +29,7 @@ func main() {
 	inputFile := flag.String("input", "", "Path to .wpress file")
 	outputDir := flag.String("out", "", "Output directory")
 	force := flag.Bool("force", false, "Overwrite existing files")
+	mode := flag.String("mode", "extract", "Operation mode: extract|compress")
 	flag.Parse()
 
 	// Handle drag-and-drop for Windows users
@@ -42,8 +43,22 @@ func main() {
 		}
 	}
 
-	if err := extract(*inputFile, *outputDir, *force); err != nil {
-		fmt.Printf("Error: %v\n", err)
+	switch *mode {
+	case "extract":
+		if err := extract(*inputFile, *outputDir, *force); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+	case "compress":
+		if *outputDir == "" {
+			*outputDir = *inputFile + ".wpress"
+		}
+		if err := compress(*inputFile, *outputDir); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+	default:
+		fmt.Printf("Error: Invalid mode '%s'\n", *mode)
 		os.Exit(1)
 	}
 }
@@ -90,6 +105,55 @@ func extract(inputPath, outputPath string, force bool) error {
        }
 
        return nil
+}
+
+func writeHeader(w io.Writer, h *FileHeader) error {
+	buf := make([]byte, headerSize)
+	
+	copy(buf[0:255], []byte(h.Name))
+	copy(buf[255:269], []byte(strconv.FormatInt(h.Size, 10)))
+	copy(buf[269:281], []byte(strconv.FormatInt(h.MTime.Unix(), 10)))
+	copy(buf[281:], []byte(h.Prefix))
+	
+	_, err := w.Write(buf)
+	return err
+}
+
+func compress(inputPath, outputPath string) error {
+	file, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+
+		relPath, _ := filepath.Rel(inputPath, path)
+		prefix := filepath.Dir(relPath)
+		if prefix == "." {
+			prefix = ""
+		}
+
+		f, _ := os.Open(path)
+		defer f.Close()
+
+		header := &FileHeader{
+			Name:   filepath.Base(relPath),
+			Size:   info.Size(),
+			MTime:  info.ModTime(),
+			Prefix: prefix,
+		}
+
+		if err := writeHeader(file, header); err != nil {
+			return err
+		}
+
+		_, err = io.Copy(file, f)
+		return err
+	})
 }
 
 func readHeader(r io.Reader) (*FileHeader, error) {
