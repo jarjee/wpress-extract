@@ -51,7 +51,10 @@ func main() {
 		}
 	case "compress":
 		if *outputDir == "" {
-			*outputDir = *inputFile + ".wpress"
+			*outputDir = filepath.Base(*inputFile) + ".wpress"
+		} else {
+			// Clean output path in case it contains directory separators
+			*outputDir = filepath.Clean(*outputDir)
 		}
 		if err := compress(*inputFile, *outputDir); err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -120,9 +123,16 @@ func writeHeader(w io.Writer, h *FileHeader) error {
 }
 
 func compress(inputPath, outputPath string) error {
+	inputPath = filepath.Clean(inputPath) // Normalize input path
+
+	// Create parent directories for output file
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		return fmt.Errorf("create output directory structure: %w", err)
+	}
+
 	file, err := os.Create(outputPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("create output file: %w", err)
 	}
 	defer file.Close()
 

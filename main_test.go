@@ -166,6 +166,34 @@ func TestWriteHeader(t *testing.T) {
 	}
 }
 
+func TestCompressPaths(t *testing.T) {
+	t.Run("TrailingSlashInput", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		testDir := filepath.Join(tmpDir, "testinput") + string(filepath.Separator)
+		os.MkdirAll(testDir, 0755)
+		os.WriteFile(filepath.Join(testDir, "file.txt"), []byte("test"), 0644)
+
+		output := filepath.Join(tmpDir, "output.wpress")
+		err := compress(testDir, output)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("NestedOutputPath", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		testDir := filepath.Join(tmpDir, "testdata")
+		os.MkdirAll(testDir, 0755)
+		os.WriteFile(filepath.Join(testDir, "file.txt"), []byte("test"), 0644)
+
+		output := filepath.Join(tmpDir, "nonexistent/directory/output.wpress")
+		err := compress(testDir, output)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
 func TestCLIArguments(t *testing.T) {
 	// Backup and restore original args
 	oldArgs := os.Args
