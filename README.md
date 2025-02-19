@@ -18,7 +18,6 @@
 git clone https://github.com/jarjee/wpress-extract
 cd wpress-extract
 make build
-sudo install bin/wpress-extract /usr/local/bin
 ```
 
 ### Extract Archives
@@ -32,8 +31,19 @@ sudo install bin/wpress-extract /usr/local/bin
 # Force overwrite existing directory
 ./bin/wpress-extract -input your-migration.wpress -force
 ```
-
 The command creates a new directory with the same name (e.g. `your-migration/`) where it extracts the archive contents.
+
+### Compress Archives
+```sh
+# Compress a folder to a wpress file
+./bin/wpress-extract -mode compress -input your-migration/
+
+# Specify custom output file
+./bin/wpress-extract -mode compress -input your-migration/ -out my-migration.wpress
+
+# Force overwrite existing wpress file
+./bin/wpress-extract -mode compress -input your-migration/ -out my-migration.wpress -force
+```
 
 ### Options
 
@@ -49,17 +59,8 @@ The command creates a new directory with the same name (e.g. `your-migration/`) 
 
 ## Acknowledgements
 
-The functionality of this package is inspired by the [Wpress-Extractor](https://github.com/fifthsegment/Wpress-Extractor) tool.
-This fork contains modifications assisted by [aider](https://aider.chat), an LLM-powered coding assistant.
-
-## Maintainers
-
-<!-- prettier-ignore-start -->
-
-| [<img src="https://avatars0.githubusercontent.com/u/472867?v=4" width="100px;"/><br /><sub><b>Felix Haus</b></sub>](https://github.com/ofhouse)<br /><sub>[Website](https://felix.house/) • [Twitter](https://twitter.com/ofhouse)</sub> | [<img src="https://avatars.githubusercontent.com/u/jarjee" width="100px;"/><br /><sub><b>@jarjee</b></sub>](https://github.com/jarjee)<br /><sub>Maintainer</sub> |
-| :---: | :---: |
-
-<!-- prettier-ignore-end -->
+The functionality of this package is inspired by the [Wpress-Extractor](https://github.com/fifthsegment/Wpress-Extractor) tool, and is a golang reimplementation of [ofhouse/wpress-extract](https://github.com/ofhouse/wpress-extract).
+This fork contains modifications assisted by [aider](https://aider.chat), an LLM-powered coding assistant - if you're wondering about the inconsistent quality of code; most of the code in this repo was generated via aider as a trail-run.
 
 ## License
 
