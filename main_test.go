@@ -11,6 +11,17 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	// Generate test data before running tests
+	if err := exec.Command("./generate_testdata.sh").Run(); err != nil {
+		fmt.Printf("Failed to generate testdata: %v", err)
+		os.Exit(1)
+	}
+	
+	exitCode := m.Run()
+	os.Exit(exitCode)
+}
+
 func TestReadHeader(t *testing.T) {
 	t.Run("EOF", func(t *testing.T) {
 		buf := make([]byte, headerSize)
