@@ -45,7 +45,7 @@ The command creates a new directory with the same name (e.g. `your-migration/`) 
 | `-mode <mode>`       | Operation mode: `extract` (default) or `compress`                                     |
 | `-help`              | Show help message                                                                     |
 
-* Note: Windows users can drag-and-drop files onto the executable instead of using `-input`
+* Note: Users can also drag-and-drop files onto the executable instead of using `-input`
 
 ## Acknowledgements
 

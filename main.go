@@ -32,7 +32,7 @@ func main() {
 	mode := flag.String("mode", "extract", "Operation mode: extract|compress")
 	flag.Parse()
 
-	// Handle drag-and-drop for Windows users
+	// Handle drag-and-drop for basic users
 	if *inputFile == "" {
 		args := flag.Args()
 		if len(args) > 0 {
