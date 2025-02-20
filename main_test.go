@@ -1,14 +1,15 @@
 package main
 
 import (
-	"os"
-	"testing"
 	"bytes"
-    "fmt"
-    "io"
-    "os/exec"
-     "path/filepath"
-    "time"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -17,7 +18,7 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Failed to generate testdata: %v", err)
 		os.Exit(1)
 	}
-	
+
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }
@@ -27,7 +28,7 @@ func TestReadHeader(t *testing.T) {
 		buf := make([]byte, headerSize)
 		buf[0] = 0x00
 		r := bytes.NewReader(buf)
-		
+
 		_, err := readHeader(r)
 		if err != io.EOF {
 			t.Errorf("Expected EOF, got %v", err)
@@ -37,8 +38,8 @@ func TestReadHeader(t *testing.T) {
 	t.Run("ValidHeader", func(t *testing.T) {
 		buf := make([]byte, headerSize)
 		copy(buf[0:255], []byte("test.txt\x00"))
-		copy(buf[255:269], []byte("1024\x00\x00\x00\x00\x00\x00\x00\x00\x00"))  // Size field as string
-		copy(buf[269:281], []byte("1672531200\x00"))                          // MTime as string
+		copy(buf[255:269], []byte("1024\x00\x00\x00\x00\x00\x00\x00\x00\x00")) // Size field as string
+		copy(buf[269:281], []byte("1672531200\x00"))                           // MTime as string
 		copy(buf[281:], []byte("wp-content/uploads\x00"))
 
 		r := bytes.NewReader(buf)
@@ -149,17 +150,17 @@ func TestWriteHeader(t *testing.T) {
 		MTime:  time.Unix(1672531200, 0),
 		Prefix: "subdir",
 	}
-	
+
 	buf := &bytes.Buffer{}
 	err := writeHeader(buf, h)
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	if len(buf.Bytes()) != headerSize {
 		t.Errorf("Invalid header size")
 	}
-	
+
 	// Verify header can be read back
 	parsed, err := readHeader(bytes.NewReader(buf.Bytes()))
 	if err != nil {
@@ -210,7 +211,7 @@ func TestCompressPaths(t *testing.T) {
 func TestCLIArguments(t *testing.T) {
 	// Backup and restore original args and flags
 	oldArgs := os.Args
-	defer func() { 
+	defer func() {
 		os.Args = oldArgs
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // Reset flags
 	}()
@@ -221,7 +222,7 @@ func TestCLIArguments(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Remove(tmpFile.Name())
-	
+
 	// Write minimal valid header
 	tmpFile.Write(make([]byte, headerSize))
 	tmpFile.Close()
