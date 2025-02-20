@@ -208,9 +208,12 @@ func TestCompressPaths(t *testing.T) {
 }
 
 func TestCLIArguments(t *testing.T) {
-	// Backup and restore original args
+	// Backup and restore original args and flags
 	oldArgs := os.Args
-	defer func() { os.Args = oldArgs }()
+	defer func() { 
+		os.Args = oldArgs
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // Reset flags
+	}()
 
 	// Create temporary test file
 	tmpFile, err := os.CreateTemp("", "test-*.wpress")
@@ -224,11 +227,13 @@ func TestCLIArguments(t *testing.T) {
 	tmpFile.Close()
 
 	t.Run("PositionalArgument", func(t *testing.T) {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.PanicOnError) // Reset flags
 		os.Args = []string{"cmd", tmpFile.Name()}
 		main()
 	})
 
 	t.Run("FlagArgument", func(t *testing.T) {
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.PanicOnError) // Reset flags
 		os.Args = []string{"cmd", "-input", tmpFile.Name()}
 		main()
 	})
