@@ -86,7 +86,7 @@ func extract(inputPath, outputPath string, force bool) error {
 
 	if !force {
 		if _, err := os.Stat(outputPath); err == nil {
-			return fmt.Errorf("output directory exists - use --force to overwrite")
+			return fmt.Errorf("output directory already exists")
 		}
 	}
 
