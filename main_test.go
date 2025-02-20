@@ -1,14 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"os/exec"
-	"bytes"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -212,13 +207,24 @@ func TestCLIArguments(t *testing.T) {
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
 
+	// Create temporary test file
+	tmpFile, err := os.CreateTemp("", "test-*.wpress")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpFile.Name())
+	
+	// Write minimal valid header
+	tmpFile.Write(make([]byte, headerSize))
+	tmpFile.Close()
+
 	t.Run("PositionalArgument", func(t *testing.T) {
-		os.Args = []string{"cmd", "test.wpress"}
+		os.Args = []string{"cmd", tmpFile.Name()}
 		main()
 	})
 
 	t.Run("FlagArgument", func(t *testing.T) {
-		os.Args = []string{"cmd", "-input", "test.wpress"}
+		os.Args = []string{"cmd", "-input", tmpFile.Name()}
 		main()
 	})
 }
