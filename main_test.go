@@ -243,7 +243,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			name:    "Flag argument",
-			args:    []string{"-input", tmpFile.Name()},
+			args:    []string{"-input", tmpFile.Name(), "-out", t.TempDir(), "-force"},
 			wantErr: false,
 		},
 		{
