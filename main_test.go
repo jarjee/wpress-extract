@@ -45,20 +45,21 @@ func TestReadHeader(t *testing.T) {
 		r := bytes.NewReader(buf)
 		header, err := readHeader(r)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal("Failed to compress directory with trailing slash:", err)
 		}
 
 		if header.Name != "test.txt" {
-			t.Errorf("Expected name 'test.txt', got '%s'", header.Name)
+			t.Errorf("Header.Name: expected 'test.txt', got '%s'", header.Name)
 		}
 		if header.Size != 1024 {
-			t.Errorf("Expected size 1024, got %d", header.Size)
+			t.Errorf("Header.Size: expected 1024, got %d", header.Size)
 		}
-		if !header.MTime.Equal(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)) {
-			t.Errorf("Unexpected mtime: %v", header.MTime)
+		expectedTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+		if !header.MTime.Equal(expectedTime) {
+			t.Errorf("Header.MTime: expected %v, got %v", expectedTime, header.MTime)
 		}
 		if header.Prefix != "wp-content/uploads" {
-			t.Errorf("Unexpected prefix: %s", header.Prefix)
+			t.Errorf("Header.Prefix: expected 'wp-content/uploads', got '%s'", header.Prefix)
 		}
 	})
 }
@@ -88,12 +89,14 @@ func TestExtract(t *testing.T) {
 		tmpDir := t.TempDir()
 		err := os.Mkdir(filepath.Join(tmpDir, "existing"), 0755)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal("Failed to create nested output directory:", err)
 		}
 
 		err = extract("testdata/valid.wpress", filepath.Join(tmpDir, "existing"), false)
 		if err == nil {
-			t.Error("Expected error about existing directory")
+			t.Error("Expected 'directory already exists' error, got nil")
+		} else if err.Error() != "output directory already exists" {
+			t.Errorf("Unexpected error: %v", err)
 		}
 	})
 
@@ -133,13 +136,17 @@ func TestCompress(t *testing.T) {
 
 	// Verify file contents
 	content1, err := os.ReadFile(filepath.Join(extractDir, "file.txt"))
-	if err != nil || string(content1) != "test" {
-		t.Error("First file content mismatch")
+	if err != nil {
+		t.Error("Failed to read file.txt:", err)
+	} else if string(content1) != "test" {
+		t.Error("Compress/extract: file.txt content mismatch")
 	}
 
 	content2, err := os.ReadFile(filepath.Join(extractDir, "sub", "file2.txt"))
-	if err != nil || string(content2) != "test2" {
-		t.Error("Second file content mismatch")
+	if err != nil {
+		t.Error("Failed to read sub/file2.txt:", err)
+	} else if string(content2) != "test2" {
+		t.Error("Compress/extract: sub/file2.txt content mismatch")
 	}
 }
 
@@ -167,16 +174,16 @@ func TestWriteHeader(t *testing.T) {
 		t.Fatal(err)
 	}
 	if parsed.Name != h.Name {
-		t.Errorf("Header name mismatch")
+		t.Errorf("Header.Name mismatch: expected '%s', got '%s'", h.Name, parsed.Name)
 	}
 	if parsed.Size != h.Size {
-		t.Errorf("Header size mismatch")
+		t.Errorf("Header.Size mismatch: expected %d, got %d", h.Size, parsed.Size)
 	}
 	if !parsed.MTime.Equal(h.MTime) {
-		t.Errorf("Header mtime mismatch")
+		t.Errorf("Header.MTime mismatch: expected %v, got %v", h.MTime, parsed.MTime)
 	}
 	if parsed.Prefix != h.Prefix {
-		t.Errorf("Header prefix mismatch")
+		t.Errorf("Header.Prefix mismatch: expected '%s', got '%s'", h.Prefix, parsed.Prefix)
 	}
 }
 
