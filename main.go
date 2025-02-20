@@ -27,28 +27,38 @@ type FileHeader struct {
 }
 
 func main() {
-	inputFile := flag.String("input", "", "Path to .wpress file")
-	outputDir := flag.String("out", "", "Output directory")
-	force := flag.Bool("force", false, "Overwrite existing files")
-	mode := flag.String("mode", "extract", "Operation mode: extract|compress")
-	flag.Parse()
+	if err := run(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func run(args []string) error {
+	fs := flag.NewFlagSet("wpress", flag.ContinueOnError)
+	inputFile := fs.String("input", "", "Path to .wpress file")
+	outputDir := fs.String("out", "", "Output directory") 
+	force := fs.Bool("force", false, "Overwrite existing files")
+	mode := fs.String("mode", "extract", "Operation mode: extract|compress")
+
+	// Parse flags with error handling
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
 
 	// Handle drag-and-drop for basic users
 	if *inputFile == "" {
-		args := flag.Args()
-		if len(args) > 0 {
-			*inputFile = args[0]
+		remaining := fs.Args()
+		if len(remaining) > 0 {
+			*inputFile = remaining[0]
 		} else {
-			fmt.Println("Error: Input file required")
-			os.Exit(1)
+			return fmt.Errorf("input file required")
 		}
 	}
 
 	switch *mode {
 	case "extract":
 		if err := extract(*inputFile, *outputDir, *force); err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("extract: %w", err)
 		}
 	case "compress":
 		outputFile := ""
@@ -63,13 +73,13 @@ func main() {
 			}
 		}
 		if err := compress(*inputFile, outputFile); err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("compress: %w", err)
 		}
 	default:
-		fmt.Printf("Error: Invalid mode '%s'\n", *mode)
-		os.Exit(1)
+		return fmt.Errorf("invalid mode '%s'", *mode)
 	}
+
+	return nil
 }
 
 func extract(inputPath, outputPath string, force bool) error {

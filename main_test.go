@@ -215,14 +215,7 @@ func TestCompressPaths(t *testing.T) {
 	})
 }
 
-func TestCLIArguments(t *testing.T) {
-	// Backup and restore original args and flags
-	oldArgs := os.Args
-	defer func() {
-		os.Args = oldArgs
-		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // Reset flags
-	}()
-
+func TestRun(t *testing.T) {
 	// Create temporary test file
 	tmpFile, err := os.CreateTemp("", "test-*.wpress")
 	if err != nil {
@@ -234,15 +227,39 @@ func TestCLIArguments(t *testing.T) {
 	tmpFile.Write(make([]byte, headerSize))
 	tmpFile.Close()
 
-	t.Run("PositionalArgument", func(t *testing.T) {
-		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.PanicOnError) // Reset flags
-		os.Args = []string{"cmd", tmpFile.Name()}
-		main()
-	})
+	tests := []struct {
+		name    string
+		args    []string
+		wantErr bool
+	}{
+		{
+			name:    "No arguments",
+			args:    []string{},
+			wantErr: true,
+		},
+		{
+			name:    "Positional argument",
+			args:    []string{tmpFile.Name()},
+			wantErr: false,
+		},
+		{
+			name:    "Flag argument",
+			args:    []string{"-input", tmpFile.Name()},
+			wantErr: false,
+		},
+		{
+			name:    "Invalid mode",
+			args:    []string{"-mode", "invalid", tmpFile.Name()},
+			wantErr: true,
+		},
+	}
 
-	t.Run("FlagArgument", func(t *testing.T) {
-		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.PanicOnError) // Reset flags
-		os.Args = []string{"cmd", "-input", tmpFile.Name()}
-		main()
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := run(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("run() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
