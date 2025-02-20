@@ -94,8 +94,8 @@ func TestExtract(t *testing.T) {
 
 		err = extract("testdata/valid.wpress", filepath.Join(tmpDir, "existing"), false)
 		if err == nil {
-			t.Error("Expected 'directory already exists' error, got nil")
-		} else if err.Error() != "output directory already exists" {
+			t.Error("Expected 'directory exists' error, got nil")
+		} else if err.Error() != "output directory exists - use --force to overwrite" {
 			t.Errorf("Unexpected error: %v", err)
 		}
 	})
